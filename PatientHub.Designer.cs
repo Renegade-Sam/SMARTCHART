@@ -1,6 +1,6 @@
 ﻿namespace SMARTCHART
 {
-    partial class Form1
+    partial class PatientHub
     {
         /// <summary>
         /// Required designer variable.
@@ -28,13 +28,33 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.components = new System.ComponentModel.Container();
+            this.MainHub = new System.Windows.Forms.Button();
+            this.SuspendLayout();
+            // 
+            // MainHub
+            // 
+            this.MainHub.Location = new System.Drawing.Point(713, 244);
+            this.MainHub.Name = "MainHub";
+            this.MainHub.Size = new System.Drawing.Size(75, 23);
+            this.MainHub.TabIndex = 0;
+            this.MainHub.Text = "Main Hub";
+            this.MainHub.UseVisualStyleBackColor = true;
+            this.MainHub.Click += new System.EventHandler(this.btnMainHub_Click);
+            // 
+            // PatientHub
+            // 
+            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 450);
-            this.Text = "Form1";
+            this.Controls.Add(this.MainHub);
+            this.Name = "PatientHub";
+            this.Text = "Patient Hub";
+            this.ResumeLayout(false);
+
         }
 
         #endregion
+
+        private System.Windows.Forms.Button MainHub;
     }
 }
-
