@@ -29,7 +29,7 @@
         private void InitializeComponent()
         {
             this.btnPatientHub = new System.Windows.Forms.Button();
-            this.LogsHub = new System.Windows.Forms.Button();
+            this.btnLogsHub = new System.Windows.Forms.Button();
             this.Quit = new System.Windows.Forms.Button();
             this.Tutorial = new System.Windows.Forms.Button();
             this.SuspendLayout();
@@ -44,15 +44,15 @@
             this.btnPatientHub.UseVisualStyleBackColor = true;
             this.btnPatientHub.Click += new System.EventHandler(this.btnPatientHub_Click);
             // 
-            // LogsHub
+            // btnLogsHub
             // 
-            this.LogsHub.Location = new System.Drawing.Point(689, 297);
-            this.LogsHub.Name = "LogsHub";
-            this.LogsHub.Size = new System.Drawing.Size(75, 23);
-            this.LogsHub.TabIndex = 1;
-            this.LogsHub.Text = "Logs Hub";
-            this.LogsHub.UseVisualStyleBackColor = true;
-            this.LogsHub.Click += new System.EventHandler(this.btnLogsHub_Click);
+            this.btnLogsHub.Location = new System.Drawing.Point(689, 297);
+            this.btnLogsHub.Name = "btnLogsHub";
+            this.btnLogsHub.Size = new System.Drawing.Size(75, 23);
+            this.btnLogsHub.TabIndex = 1;
+            this.btnLogsHub.Text = "Logs Hub";
+            this.btnLogsHub.UseVisualStyleBackColor = true;
+            this.btnLogsHub.Click += new System.EventHandler(this.btnLogsHub_Click);
             // 
             // Quit
             // 
@@ -79,7 +79,7 @@
             this.ClientSize = new System.Drawing.Size(776, 446);
             this.Controls.Add(this.Tutorial);
             this.Controls.Add(this.Quit);
-            this.Controls.Add(this.LogsHub);
+            this.Controls.Add(this.btnLogsHub);
             this.Controls.Add(this.btnPatientHub);
             this.Name = "MainHub";
             this.Text = "Main Hub";
@@ -90,7 +90,7 @@
         #endregion
 
         private System.Windows.Forms.Button btnPatientHub;
-        private System.Windows.Forms.Button LogsHub;
+        private System.Windows.Forms.Button btnLogsHub;
         private System.Windows.Forms.Button Quit;
         private System.Windows.Forms.Button Tutorial;
     }
