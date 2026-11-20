@@ -83,6 +83,7 @@
             this.Controls.Add(this.btnPatientHub);
             this.Name = "MainHub";
             this.Text = "Main Hub";
+            this.Load += new System.EventHandler(this.MainHub_Load);
             this.ResumeLayout(false);
 
         }

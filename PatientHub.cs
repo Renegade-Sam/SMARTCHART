@@ -1,14 +1,18 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using Newtonsoft.Json;
+using System.Runtime.CompilerServices;
+
+[assembly: InternalsVisibleTo("SMARTCHART.UnitTests")]
 
 namespace SMARTCHART
 {
@@ -72,56 +76,139 @@ namespace SMARTCHART
 
         private void SavePatients()
         {
+            string directory = Path.GetDirectoryName(filePath);
+
+            if (!string.IsNullOrWhiteSpace(directory))
+                Directory.CreateDirectory(directory);
+
             File.WriteAllText(filePath,JsonConvert.SerializeObject(patients, Formatting.Indented));
         }
 
-        private void btnRegPatient_Click(object sender, EventArgs e)
-        {// Prompt the user for patient information using input boxes, then we store it into a .json file.
-            string name = Microsoft.VisualBasic.Interaction.InputBox("Enter patient's name:", "Register Patient");
-            if (string.IsNullOrWhiteSpace(name)) return;
+        internal static bool CreatePatient(
+            string name,
+            string lastName,
+            string address,
+            string phoneNumber,
+            string insuredInput,
+            string dobInput,
+            out Patients patient,
+            out string error)
+        {
+            patient = null;
+            error = null;
 
-            string LastName = Microsoft.VisualBasic.Interaction.InputBox("Enter last name:", "Register Patient");
-            if (string.IsNullOrWhiteSpace(LastName)) return;
+            if (string.IsNullOrWhiteSpace(name))
+                return Fail("Name is required.", out error);
 
-            string Address = Microsoft.VisualBasic.Interaction.InputBox("Enter address:", "Register Patient");
-            if (string.IsNullOrWhiteSpace(Address)) return;
+            if (string.IsNullOrWhiteSpace(lastName))
+                return Fail("Last name is required.", out error);
 
-            string PhoneNumber = Microsoft.VisualBasic.Interaction.InputBox("Enter phone number:", "Register Patient");
-            if (string.IsNullOrWhiteSpace(PhoneNumber)) return;
+            if (string.IsNullOrWhiteSpace(address))
+                return Fail("Address is required.", out error);
 
-            string insuredInput = Microsoft.VisualBasic.Interaction.InputBox("Is the patient insured? (yes/no):", "Register Patient");
-            if (insuredInput.Equals("Yes") || insuredInput.Equals("yes") || insuredInput.Equals("Y") || insuredInput.Equals("y")){}
-            else if (insuredInput.Equals("No") || insuredInput.Equals("no") || insuredInput.Equals("N") || insuredInput.Equals("n")){}
-            else
+            if (string.IsNullOrWhiteSpace(phoneNumber))
+                return Fail("Phone number is required.", out error);
+
+            if (!ParseInsurance(insuredInput, out bool insured))
+                return Fail("Insurance must be yes or no.", out error);
+
+            if (!DateTime.TryParseExact(
+                    dobInput,
+                    "MM/dd/yyyy",
+                    CultureInfo.InvariantCulture,
+                    DateTimeStyles.None,
+                    out DateTime dob))
             {
-                MessageBox.Show("Invalid input for insurance status. Please enter 'yes' or 'no'.");
-                return;
+                return Fail(
+                    "Date of birth must be in MM/DD/YYYY format.",
+                    out error);
             }
 
-            string dobInput = Microsoft.VisualBasic.Interaction.InputBox("Enter date of birth (MM/DD/YYYY):", "Register Patient");
-            if (!DateTime.TryParse(dobInput, out DateTime DOB)) //small expection that tries to parse bod.
-            {
-                MessageBox.Show("Invalid input for date of birth. Please enter a valid date (MM/DD/YYYY).");
-                return;
-            }
-            // created a patient object using json we store the info below.
-            var patient = new Patients
+            patient = new Patients
             {
                 Name = name.Trim(),
-                LastName = LastName.Trim(),
-                Address = Address.Trim(),
-                PhoneNumber = PhoneNumber.Trim(),
-                Insured = insuredInput.Equals("Yes") || insuredInput.Equals("yes") || insuredInput.Equals("Y") || insuredInput.Equals("y"),
-                DateOfBirth = DOB.Date
+                LastName = lastName.Trim(),
+                Address = address.Trim(),
+                PhoneNumber = phoneNumber.Trim(),
+                Insured = insured,
+                DateOfBirth = dob.Date
             };
 
-            // Throwing an exception if the file doesn't exist or not in correct file path.
+            return true;
+        }
+
+        private static bool ParseInsurance(string input, out bool insured)
+        {
+            string value = input?.Trim() ?? "";
+
+            if (value.Equals("yes", StringComparison.OrdinalIgnoreCase) ||
+                value.Equals("y", StringComparison.OrdinalIgnoreCase))
+            {
+                insured = true;
+                return true;
+            }
+
+            if (value.Equals("no", StringComparison.OrdinalIgnoreCase) ||
+                value.Equals("n", StringComparison.OrdinalIgnoreCase))
+            {
+                insured = false;
+                return true;
+            }
+
+            insured = false;
+            return false;
+        }
+
+        private static bool Fail(string message, out string error)
+        {
+            error = message;
+            return false;
+        }
+        //Method Refactored to use PatientRegistration method for better separation of concerns and maintainability.
+        private void btnRegPatient_Click(object sender, EventArgs e)
+        {// Prompt the user for patient information.
+            string name = Microsoft.VisualBasic.Interaction.InputBox(
+         "Enter patient's name:", "Register Patient");
+
+            string lastName = Microsoft.VisualBasic.Interaction.InputBox(
+                "Enter last name:", "Register Patient");
+
+            string address = Microsoft.VisualBasic.Interaction.InputBox(
+                "Enter address:", "Register Patient");
+
+            string phoneNumber = Microsoft.VisualBasic.Interaction.InputBox(
+                "Enter phone number:", "Register Patient");
+
+            string insuredInput = Microsoft.VisualBasic.Interaction.InputBox(
+                "Is the patient insured? (yes/no):", "Register Patient");
+
+            string dobInput = Microsoft.VisualBasic.Interaction.InputBox(
+                "Enter date of birth (MM/DD/YYYY):", "Register Patient");
+
+
+            if (!CreatePatient(
+                    name,
+                    lastName,
+                    address,
+                    phoneNumber,
+                    insuredInput,
+                    dobInput,
+                    out Patients patient,
+                    out string error))
+            {
+                MessageBox.Show(error);
+                return;
+            }
+
             try
             {
                 patients.Add(patient);
                 SavePatients();
 
-                logManager.AddLog(currentUser.Name, "Registered patient", patient.Id);
+                logManager.AddLog(
+                    currentUser.Name,
+                    $"Registered patient: {patient.Name} {patient.LastName}",
+                    patient.Id);
 
                 LoadPatients();
 
@@ -129,7 +216,121 @@ namespace SMARTCHART
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"An error occurred while saving patient data: {ex.Message}");
+                MessageBox.Show(
+                    $"An error occurred while saving patient data: {ex.Message}");
+            }
+        }
+       
+        private bool EditPatientField(Patients patient, out string updatedField, out string oldValue, out string newValue)
+        {
+            updatedField = "";
+            oldValue = "";
+            newValue = "";
+
+
+            string field = Microsoft.VisualBasic.Interaction.InputBox("Which field to edit?\n" + 
+                "Enter: first name, last name, address, phone number, insurance, or date of birth(dob)", 
+                "edit patient");
+
+            if (string.IsNullOrEmpty(field))
+                return false;
+
+            switch (field.Trim().ToLowerInvariant()) 
+            {
+                case "first name":
+                case "name":
+                    oldValue = patient.Name ?? "";
+                    string name = Microsoft.VisualBasic.Interaction.InputBox("First name:", "Edit Patient", oldValue);
+
+                    if (string.IsNullOrWhiteSpace(name)) return false;
+
+                    newValue = name.Trim();
+                    patient.Name = newValue;
+                    updatedField = "First Name";
+                    return true;
+
+                case "last name":
+                    oldValue = patient.LastName ?? "";
+                    string lastName = Microsoft.VisualBasic.Interaction.InputBox("Last name:", "Edit Patient", oldValue);
+
+                    if (string.IsNullOrWhiteSpace(lastName)) return false;
+
+                    newValue = lastName.Trim();
+                    patient.LastName = newValue;
+                    updatedField = "Last Name";
+                    return true;
+
+                case "address":
+                    oldValue = patient.Address ?? "";
+                    string address = Microsoft.VisualBasic.Interaction.InputBox("Address:", "Edit Patient", oldValue);
+                    if (string.IsNullOrWhiteSpace(address)) return false;
+                    
+                    newValue = address.Trim();
+                    patient.Address = newValue;
+                    updatedField = "Address";
+                    return true;    
+
+                case "phone number":
+                    oldValue = patient.PhoneNumber ?? "";
+                    string phoneNumber = Microsoft.VisualBasic.Interaction.InputBox("Phone number:", "Edit Patient", oldValue);
+                    if (string.IsNullOrWhiteSpace(phoneNumber)) return false;
+                    
+                    newValue = phoneNumber.Trim();
+                    patient.PhoneNumber = newValue;
+                    updatedField = "Phone Number";
+                    return true;
+
+                case "insurance status":
+                case "insurance":
+                case "insured":
+
+                    oldValue = patient.Insured ? "Yes" : "No";
+
+                    string answer = Microsoft.VisualBasic.Interaction.InputBox("Is the patient insured? Enter yes or no:", 
+                        "Edit Patient", 
+                        oldValue);
+
+                    if (answer.Equals("yes", StringComparison.OrdinalIgnoreCase) || answer.Equals("y", StringComparison.OrdinalIgnoreCase))
+                    {
+                        patient.Insured = true;
+                        newValue = "Yes";
+                    }
+                    else if (answer.Equals("no", StringComparison.OrdinalIgnoreCase) || answer.Equals("n", StringComparison.OrdinalIgnoreCase))
+                    {
+                        patient.Insured = false;
+                        newValue = "No";
+                    }
+                    else
+                    {
+                        MessageBox.Show("Enter yes or no.");
+                        return false;
+                    }
+
+                    updatedField = "Insurance Status";
+                    return true;
+
+                case "date of birth":
+                case "dob":
+
+                    oldValue = patient.DateOfBirth.ToString("MM/dd/yyyy");
+
+                    string dobInput = Microsoft.VisualBasic.Interaction.InputBox("Date of birth (MM/DD/YYYY):",
+                        "Edit Patient", oldValue);
+
+                    if (!DateTime.TryParse(dobInput, out DateTime dob))
+                    {
+                        MessageBox.Show("Enter a valid date of birth.");
+                        return false;
+                    }
+
+                    patient.DateOfBirth = dob.Date;
+                    newValue = patient.DateOfBirth.ToString("MM/dd/yyyy");
+                    updatedField = "Date of Birth";
+                    return true;
+
+                default:
+                    MessageBox.Show("Choose one of listed fields.");
+                    return false;
             }
         }
 
@@ -149,66 +350,21 @@ namespace SMARTCHART
                 return;
             }
 
-            string name = Microsoft.VisualBasic.Interaction.InputBox("First name:", "Edit Patient", patient.Name);
-            if (string.IsNullOrWhiteSpace(name)) return;
-
-            string lastName = Microsoft.VisualBasic.Interaction.InputBox("Last name:", "Edit Patient", patient.LastName);
-            if (string.IsNullOrWhiteSpace(lastName)) return;
-
-            string address = Microsoft.VisualBasic.Interaction.InputBox("Address:", "Edit Patient", patient.Address);
-            if (string.IsNullOrWhiteSpace(address)) return;
-
-            string phoneNumber = Microsoft.VisualBasic.Interaction.InputBox("Phone number:", "Edit Patient", patient.PhoneNumber);
-            if (string.IsNullOrWhiteSpace(phoneNumber)) return;
-
-            string insuredInput = Microsoft.VisualBasic.Interaction.InputBox("Is the patient insured? Enter yes or no:","Edit Patient",
-                patient.Insured ? "yes" : "no");
-
-            bool insured;
-            if (insuredInput.Equals("yes", StringComparison.OrdinalIgnoreCase) ||
-                insuredInput.Equals("y", StringComparison.OrdinalIgnoreCase))
-            {
-                insured = true;
-            }
-            else if (insuredInput.Equals("no", StringComparison.OrdinalIgnoreCase) ||
-                     insuredInput.Equals("n", StringComparison.OrdinalIgnoreCase))
-            {
-                insured = false;
-            }
-            else
-            {
-                MessageBox.Show("Enter yes or no for insurance status.");
+            //Prompt for method and edit the selected field.
+            if (!EditPatientField(patient, out string updatedField, out string oldValue, out string newValue))
                 return;
-            }
 
-            string dobInput = Microsoft.VisualBasic.Interaction.InputBox("Date of birth (MM/DD/YYYY):","Edit Patient",
-                patient.DateOfBirth.ToString("MM/dd/yyyy"));
-
-            DateTime dob;
-            if (!DateTime.TryParse(dobInput, out dob))
-            {
-                MessageBox.Show("Enter a valid date of birth.");
-                return;
-            }
-
-            patient.Name = name.Trim();
-            patient.LastName = lastName.Trim();
-            patient.Address = address.Trim();
-            patient.PhoneNumber = phoneNumber.Trim();
-            patient.Insured = insured;
-            patient.DateOfBirth = dob.Date;
-
+            // Save the updated patient list and log the action.
             try
             {
-                Directory.CreateDirectory(Path.GetDirectoryName(filePath));
-                File.WriteAllText(filePath,JsonConvert.SerializeObject(patients, Formatting.Indented));
+                SavePatients();
                 LoadPatients();
-                MessageBox.Show("Patient updated and saved.");
-                logManager.AddLog(currentUser.Name, "Updated patient", patient.Id);
+                logManager.AddLog(currentUser.Name, $"Updated patient field: {updatedField}: '{oldValue}' -> '{newValue}'", patient.Id);
+                MessageBox.Show("Patient updated successfully.");
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Could not save the patient: " + ex.Message);
+                MessageBox.Show("Could not update patient: " + ex.Message);
             }
         }
 
@@ -290,6 +446,11 @@ namespace SMARTCHART
 
             PatientGrid.DataSource = null;
             PatientGrid.DataSource = patients;
+        }
+
+        private void PatientHub_Load(object sender, EventArgs e)
+        {
+
         }
     }
 }

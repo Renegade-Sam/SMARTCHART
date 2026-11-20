@@ -76,6 +76,7 @@
             this.Controls.Add(this.LmainHub);
             this.Name = "LogsHub";
             this.Text = "Logs Hub";
+            this.Load += new System.EventHandler(this.LogsHub_Load);
             ((System.ComponentModel.ISupportInitialize)(this.LogsGrid)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
