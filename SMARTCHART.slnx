@@ -1,3 +1,4 @@
 <Solution>
   <Project Path="SMARTCHART.csproj" Id="f9e0c208-9c08-4f2c-8737-81d0e11e8d44" />
+  <Project Path="Tests/SMARTCHART.UnitTests/SMARTCHART.UnitTests.csproj" Id="dc44f003-f74c-4bc9-8cfb-fe5267e5cb86" />
 </Solution>

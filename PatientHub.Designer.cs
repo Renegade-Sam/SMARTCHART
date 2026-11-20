@@ -133,6 +133,7 @@
             this.Controls.Add(this.MainHub);
             this.Name = "PatientHub";
             this.Text = "Patient Hub";
+            this.Load += new System.EventHandler(this.PatientHub_Load);
             ((System.ComponentModel.ISupportInitialize)(this.PatientGrid)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();

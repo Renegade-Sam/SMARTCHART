@@ -70,5 +70,10 @@ namespace SMARTCHART
                 MessageBoxIcon.Information
             );
         }
+
+        private void MainHub_Load(object sender, EventArgs e)
+        {
+
+        }
     }
 }
